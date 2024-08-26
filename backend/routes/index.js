@@ -3,6 +3,7 @@ var router = express.Router();
 var userModel = require('../models/useModel');
 var bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
+var docModel = require('../models/docModel');
 
 const secret = "nexussecret"
 
@@ -60,6 +61,80 @@ router.post('/login', async (req, res) => {
 
 });
 
+router.post('/createDoc', async (req, res) => {
+  let { userId, docName} = req.body;
+  let user = userModel.findById(userId)
 
+  if(user){
+    let doc = await docModel.create({
+      uploadedBy: userId,
+      title: docName
+    })
+
+    return res.json({ success: true, message: "Documento criado com Sucesso!", docId: doc._id})
+  }else{
+    return res.json({ sucess: false, message: "Usuário Inválido"})
+  }
+
+});
+
+router.post('/uploadDoc', async (req, res) => {
+  let { userId, docId, content} = req.body;
+  let user = userModel.findById(userId)
+  if(user){
+    let doc = await docModel.findByIdAndUpdate(docId, {content: content})
+    return res.json({ success: true, message: "Documento atualizado com Sucesso!"})
+  }else{
+    return res.json({ sucess: false, message: "Usuário Inválido"})
+  }
+
+});
+
+router.post('/getDoc', async (req, res) => {
+  let { userId, docId } = req.body;
+  let user = userModel.findById(userId)
+  if(user){
+    let doc = await docModel.findById(docId)
+    if(doc){
+      return res.json({ success: true, message: "Documento atualizado com Sucesso!", doc: doc});
+    }else{
+      return res.json({ sucess: false, message: "Documento Inválido"})
+    }
+  }else{
+    return res.json({ sucess: false, message: "Usuário Inválido"})
+  }
+
+});
+router.post('/deleteDoc', async (req, res) => {
+  let { userId, docId } = req.body;
+  let user = userModel.findById(userId)
+  if(user){
+    let doc = await docModel.findByIdAndDelete(docId)
+    return res.json({ success: true, message: "Documento Deletado com Sucesso!"});
+  }else{
+    return res.json({ sucess: false, message: "Usuário Inválido"})
+  }
+});
+
+router.post('/getAllDocs', async (req, res) => {
+  let { userId } = req.body;
+  let user = userModel.findById(userId)
+  if(user){
+    let docs = await docModel.find({uploadedBy: userId})
+    return res.json({ success: true, message: "Documents buscados com Sucesso!", docs: docs});
+  }else{
+    return res.json({ sucess: false, message: "Usuário Inválido"})
+  }
+});
+
+router.post('/getUser', async (req, res) => {
+  let { userId } = req.body;
+  let user = userModel.findById(userId)
+  if(user){
+    return res.json({ success: true, message: "Usuário Encontrado com Sucesso!", user: user});
+  }else{
+    return res.json({ sucess: false, message: "Usuário Inválido"})
+  }
+});
 
 module.exports = router;

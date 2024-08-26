@@ -32,7 +32,7 @@ export default function Login() {
             if(data.success === true){
                 localStorage.setItem("token", data.token)
                 localStorage.setItem("isLoggenIn", true)
-                localStorage.setItem("userID", data.userId)
+                localStorage.setItem("userId", data.userId)
                 navigate("/")
             }else{
                 setError(data.message)
