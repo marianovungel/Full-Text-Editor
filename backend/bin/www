@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('backend:server');
 var http = require('http');
+const cors = require("cors")
 
 /**
  * Get port from environment and store in Express.
@@ -20,6 +21,35 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+
+const io = require("socket.io")(server, {
+  cors:{
+      origin: "*",
+      methods: ["GET", "POST"]
+  }
+})
+
+app.use(cors())
+
+io.on('connection', (socket)=>{
+  socket.emit('me', socket.id);
+
+  socket.on('disconnect', ()=>{
+      socket.broadcast.emit("callended")
+  })
+
+  socket.on("calluser", ({ userToCall, signalData, from, name}) =>{
+      io.to(userToCall).emit("calluser", { signal: signalData, from, name})
+  })
+
+  socket.on("answercall", ( data )=>{
+      io.to(data.to).emit("callaccepted", data.signal)
+  })
+})
+
+
+
+
 
 /**
  * Listen on provided port, on all network interfaces.
